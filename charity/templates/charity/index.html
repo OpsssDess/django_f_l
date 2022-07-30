@@ -1,0 +1,26 @@
+{% extends "charity/base.html"%}
+{%block title%}{%endblock%}
+{%block content%}
+<div class="container">
+    <p class="lead">
+    Здесь можете пожерствовать любую вещь положив её в соответсвующую ячейку FIFO или LIFO.
+    </p>
+</div>
+<div class="container">
+    <h3>Регистрация прошения</h3>
+    <p>
+    <a class="nav-link active" aria-current="page" href="ask_good">Взять</a>
+    </p>
+</div>
+
+<div class="container">
+    <h3>Регистрация пожертвования</h3>
+    <p>
+        <form action='donate' method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Пожертвовать!</button>
+    </form>
+    </p>
+</div>
+{%endblock%}

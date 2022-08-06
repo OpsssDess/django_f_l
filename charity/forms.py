@@ -1,5 +1,5 @@
 from django import forms
-from models import *
+from charity.models import *
 
 class DonateForm(forms.Form):
     good = forms.CharField(label = 'Какую вещь хотите отдать?', max_length=255)

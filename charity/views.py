@@ -19,7 +19,7 @@ def ask_good(request):
     availability = Good.objects.all().exists()
 
     if availability:
-        last_good = Good.objects.order_by('-id')[0]
+        last_good = Good.objects.order_by('-time_create')[0]
         # or last_good = Good.objects.last()
         last_good.amount -= 1
         last_good.save()

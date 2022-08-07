@@ -12,15 +12,14 @@ def index(request):
     return render(request, 'charity/index.html', {'form': form})
 
 def donate(request):
-    Good.objects.create(name_good=request.POST['good'], amount=request.POST['amount'])
+    Good.objects.create(name_good=request.POST['good'], amount=request.POST['amount'], stock=request.POST['f_or_l'])
     return render(request, 'charity/request_donation.html')
 
 def ask_good(request):
     availability = Good.objects.all().exists()
 
     if availability:
-        last_good = Good.objects.order_by('-time_create')[0]
-        # or last_good = Good.objects.last()
+        last_good = Good.objects.order_by('-stock','-time_create')[0]
         last_good.amount -= 1
         last_good.save()
         if last_good.amount == 0:

@@ -20,7 +20,16 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Пожертвовать!</button>
-    </form>
+        </form>
+    </p>
+</div>
+<div class="container">
+    <p>
+        <form action='' method="post">
+        {% csrf_token %}
+        {{ officeForm.as_p }}
+        <button type="submit">Пожертвовать!</button>
+        </form>
     </p>
 </div>
 {%endblock%}

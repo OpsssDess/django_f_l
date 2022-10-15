@@ -11,7 +11,6 @@ def index(request):
     context = {
         'form': DonateForm(),
         'officeForm': OfficeForm(),
-        'OfficeFormChoise': OfficeFormChoise(),
     }
     return render(request, 'charity/index.html', context)
 

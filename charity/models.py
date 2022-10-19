@@ -1,7 +1,8 @@
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
-from django.http import HttpResponse, request
+from django.db.models import Sum
+from django.db.models import Q, F
 
 
 class Good(models.Model):
@@ -44,12 +45,18 @@ class Office(models.Model):
         verbose_name = 'склад'
         verbose_name_plural = 'склады'
         ordering = ['ocupied']
+        constraints = [
+            models.CheckConstraint(check=models.Q(ocupied__lte=F('capacity')), name='ocupied_gte_capasity'),
+        ]
 
 @receiver(signals.post_save, sender=Good)
 def counting_places(sender, instance, **kwargs):
+
+    all_goods = Good.objects.filter(office=instance.office).exclude(state='shipped')
+    amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
     actual_stock = Office.objects.get(address=instance.office)
-    actual_stock.ocupied = actual_stock.good_set.count()
+    actual_stock.ocupied = amount_all_goods['sum_amount']
     actual_stock.save()
 
-    print("Good created, test")
-    print(instance.office)
+
+

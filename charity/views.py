@@ -5,12 +5,16 @@ from django.http import HttpResponse
 
 from charity.forms import *
 
-stock = []
+
 
 def index(request):
+    office = Office.objects.get(id=request.session['office_id'])
+    button_disabled = office.ocupied >= office.capacity
+
     context = {
         'form': DonateForm(),
         'officeForm': OfficeForm(),
+        'button_disabled': button_disabled,
     }
     return render(request, 'charity/index.html', context)
 

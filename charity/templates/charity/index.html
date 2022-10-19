@@ -19,7 +19,7 @@
         <form action='donate' method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Пожертвовать!</button>
+        <button type="submit" {% if button_disabled %} disabled {% endif %}>Пожертвовать!</button>
         </form>
     </p>
 </div>
@@ -28,7 +28,7 @@
         <form action='' method="post">
         {% csrf_token %}
         {{ officeForm.as_p }}
-        <button type="submit">Пожертвовать!</button>
+        <button type="submit">Отправить!</button>
         </form>
     </p>
 </div>

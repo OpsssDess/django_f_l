@@ -17,6 +17,10 @@
                 </li>
             </ul>
         </div>
+        <form class="d-flex" role="search" action="{% url 'set_session_office' %}" method="post">
+        {% csrf_token %}
+        {{ OfficeFormChoise.as_p }}
+      </form>
     </div>
 </nav>
 {%block content%}

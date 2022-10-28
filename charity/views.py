@@ -1,49 +1,56 @@
 import json
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.db import transaction, IntegrityError
+from django.db.models import Q, F
 
-from forms import *
+from charity.forms import *
 
-stock = []
-form = DonateForm()
+
 
 def index(request):
-    return render(request, 'charity/index.html', {'form': form})
+    button_disabled = False
+    if request.session.get('office_id'):
+        office = Office.objects.get(id=request.session['office_id'])
+        button_disabled = office.ocupied >= office.capacity
 
+    context = {
+        'form': DonateForm(),
+        'officeForm': OfficeForm(),
+        'button_disabled': button_disabled,
+    }
+    return render(request, 'charity/index.html', context)
 
-
+@transaction.atomic()
 def donate(request):
-    print(request.POST)
-    if request.POST['f_or_l'] == 'LIFO':
-        stock.append({"name": request.POST['good'], "amount": request.POST['amount']})
-    else:
-        stock.insert(0, {"name": request.POST['good'], "amount": request.POST['amount']})
-    print(stock)
-    with open('good', 'w', encoding='utf-8') as f:
-        json.dump(stock, f)
-    return render(request, 'charity/request_donation.html')
+    if request.method == 'POST':
+        form = DonateForm(request.POST)
+        if form.is_valid():
+            Good = form.save(commit=False)
+            Good.office = Office.objects.select_for_update().get(id=request.session['office_id'])
+            if Good.office.capacity > Good.amount + Good.office.ocupied:
+                Good.save()
+                form.save_m2m()
+            else:
+                form.add_error(Good.amount, 'слишком большое количество вещей!')
+    return redirect('main')
 
 def ask_good(request):
-    with open('good', mode="r", encoding='utf-8') as file:
-        stock1 = json.load(file)
-
-    donation = {}
-
-    if stock1:
-        last_thing = stock1[len(stock1) - 1]
-        if int(last_thing['amount']) == 1:
-            donation = stock1.pop()
-        else:
-            one_time_var = int(last_thing['amount'])
-            last_thing['amount'] = one_time_var - 1
-            donation = stock1[-1]
-
-        with open('good', 'w', encoding='utf-8') as f:
-            json.dump(stock1, f)
-
-        context = {'take_good': donation['name']}
-
+    availability = Good.objects.all().exists()
+    if availability:
+        last_good = Good.objects.order_by('-stock','-time_create')[0]
+        last_good.amount -= 1
+        last_good.save()
+        if last_good.amount == 0:
+            last_good.delete()
+        context = {'availability': availability, 'take_good': last_good.thing}
         return render(request, 'charity/request_take.html', context)
     else:
         return render(request, 'charity/request_take.html')
+
+def set_session_office(request):
+    form = OfficeFormChoise(data=request.POST)
+    if form.is_valid():
+        request.session['office_id'] = form.cleaned_data['officeChoise'].id
+    return redirect('main')

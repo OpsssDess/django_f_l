@@ -2,14 +2,18 @@ import json
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.db import transaction, IntegrityError
+from django.db.models import Q, F
 
 from charity.forms import *
 
 
 
 def index(request):
-    office = Office.objects.get(id=request.session['office_id'])
-    button_disabled = office.ocupied >= office.capacity
+    button_disabled = False
+    if request.session.get('office_id'):
+        office = Office.objects.get(id=request.session['office_id'])
+        button_disabled = office.ocupied >= office.capacity
 
     context = {
         'form': DonateForm(),
@@ -18,15 +22,19 @@ def index(request):
     }
     return render(request, 'charity/index.html', context)
 
+@transaction.atomic()
 def donate(request):
     if request.method == 'POST':
         form = DonateForm(request.POST)
         if form.is_valid():
             Good = form.save(commit=False)
-            Good.office_id = request.session['office_id']
-            Good.save()
-            form.save_m2m()
-    return render(request, 'charity/request_donation.html')
+            Good.office = Office.objects.select_for_update().get(id=request.session['office_id'])
+            if Good.office.capacity > Good.amount + Good.office.ocupied:
+                Good.save()
+                form.save_m2m()
+            else:
+                form.add_error(Good.amount, 'слишком большое количество вещей!')
+    return redirect('main')
 
 def ask_good(request):
     availability = Good.objects.all().exists()

@@ -5,33 +5,26 @@ from django.db.models import Sum
 from django.db.models import Q, F
 
 
-class Good(models.Model):
-    CHOICES = (
-        ('requested', 'requested'),
-        ('available', 'available'),
-        ('booked', 'booked'),
-        ('shipped', 'shipped'),
-    )
-
-    CHOICES_STOCK = (
-        ('LIFO', 'LIFO'),
-        ('FIFO', 'FIFO')
-    )
-
-    thing = models.CharField(max_length=50, verbose_name='вещь')
-    amount = models.IntegerField(verbose_name='количество')
-    time_create = models.DateTimeField(auto_now_add=True, verbose_name='время создания')
-    stock = models.CharField(max_length=50, choices=CHOICES_STOCK, verbose_name='тип сортировки')
-    state = models.CharField(max_length=100, choices=CHOICES, verbose_name='состояние')
-    office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
+class Thing(models.Model):
+    name = models.CharField(max_length=50, verbose_name='имя вещи')
+    type_thing = models.CharField(max_length=255, verbose_name='тип вещи')
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.thing
+        return self.name
 
     class Meta:
         verbose_name = 'Вещь'
-        verbose_name_plural = 'Вещи которые принесли'
-        ordering = ['-stock', '-time_create']
+        verbose_name_plural = 'Вещи'
+
+
+class Category(models.Model):
+    CHOICES_STRATEGY = (
+        ('LIFO', 'LIFO'),
+        ('FIFO', 'FIFO')
+    )
+    name_strategy = models.CharField(max_length=50, choices=CHOICES_STRATEGY)
+
 
 class Office(models.Model):
     address = models.CharField(max_length=250, verbose_name='склад')
@@ -44,19 +37,72 @@ class Office(models.Model):
     class Meta:
         verbose_name = 'склад'
         verbose_name_plural = 'склады'
-        ordering = ['ocupied']
         constraints = [
-            models.CheckConstraint(check=models.Q(ocupied__lte=F('capacity')), name='ocupied_gte_capasity'),
+            models.CheckConstraint(check=models.Q(ocupied__lte=F('capacity')), name='ocupied_lte_capasity'),
         ]
+# cигнал с прошлой домашней работы
+# @receiver(signals.post_save, sender=Thing)
+# def counting_places(sender, instance, **kwargs):
+#     all_goods = Thing.objects.filter(office=instance.office).exclude(state='shipped')
+#     amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
+#     actual_stock = Office.objects.get(address=instance.office)
+#     actual_stock.ocupied = amount_all_goods['sum_amount']
+#     actual_stock.save()
 
-@receiver(signals.post_save, sender=Good)
-def counting_places(sender, instance, **kwargs):
 
-    all_goods = Good.objects.filter(office=instance.office).exclude(state='shipped')
-    amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
-    actual_stock = Office.objects.get(address=instance.office)
-    actual_stock.ocupied = amount_all_goods['sum_amount']
-    actual_stock.save()
+class BaseItem(models.Model):
+    base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE, verbose_name='склад')
+    office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
+
+
+class RequestItem(BaseItem):
+    request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
+    donation_item = models.ForeignKey('DonationItem', on_delete=models.CASCADE)
+
+
+class DonationItem(BaseItem):
+    state = models.CharField(max_length=250)
+    donation = models.ForeignKey('Donation', on_delete=models.CASCADE)
+
+class ItemDescription(DonationItem):
+    details = models.CharField(max_length=250)
+    name = models.CharField(max_length=250)
+    condition = models.CharField(max_length=250)
+    item_hash = models.IntegerField(db_column='item_description_hash')
+
+
+class Collection(models.Model):
+    creation_date = models.DateTimeField()
+    donation_hash = models.IntegerField()
+
+    class Meta:
+        abstract = True
+
+class Donation(Collection):
+    pass
+
+class HelpRequest(Collection):
+   pass
+
+class CompletedRequest(HelpRequest):
+    pass
+
+
+
+
+
+# class ItemMedia(models.Model):
+#     STATUS = (
+#         ('requested', 'requested'),
+#         ('available', 'available'),
+#         ('booked', 'booked'),
+#         ('shipped', 'shipped'),
+#     )
+#     title = models.CharField(max_length=250)
+#     file = models.FileField(upload_to='files')
+#     type = models.CharField(max_length=250)
+#     preview = models.CharField(max_length=250)
+#     status = models.CharField(max_length=250, choices=STATUS, verbose_name='состояние')
 
 
 

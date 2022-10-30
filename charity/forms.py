@@ -3,7 +3,7 @@ from charity.models import *
 
 class DonateForm(forms.ModelForm):
     class Meta:
-        model = Good
+        model = Thing
         exclude = ['office']
 
 class OfficeForm(forms.ModelForm):

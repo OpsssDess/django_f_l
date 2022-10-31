@@ -17,3 +17,8 @@ class OfficeFormChoise(forms.Form):
         widget=forms.Select(attrs={"onChange": 'form.submit();'}),
     )
 
+class ThingForm(forms.ModelForm):
+    class Meta:
+        model = Thing
+        fields = ['name',]
+

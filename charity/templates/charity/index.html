@@ -32,4 +32,16 @@
         </form>
     </p>
 </div>
+
+<div class="container">
+    <h3>Создать запрос на помощь</h3>
+    <form action="add_request" method="post">
+        {% csrf_token %}
+        <p>Введите число от 1 до 10:</p>
+        <p><input type="number" size="3" name="num" min="1" max="10" value="1"></p>
+        <button type="submit">перейти</button>
+    </form>
+
+
+</div>
 {%endblock%}

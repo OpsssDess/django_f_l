@@ -8,7 +8,6 @@ from django.db.models import Q, F
 from charity.forms import *
 
 
-
 def index(request):
     button_disabled = False
     if request.session.get('office_id'):
@@ -21,6 +20,25 @@ def index(request):
         'button_disabled': button_disabled,
     }
     return render(request, 'charity/index.html', context)
+
+def add_request(request):
+    number = request.POST.get('num')
+    context = {
+        'N': number,
+        'item_form': ThingForm(),
+    }
+
+    return render(request, 'charity/add_request.html', context)
+
+def register_request(request):
+    if request.method == 'POST':
+        for i in range(int(request.POST['amount'])):
+            Thing.objects.create(name=request.POST.get(f'name_{i}'))
+        donat_id = Donation.objects.create(donation_hash='12345')
+    context = {
+        'id': donat_id,
+        }
+    return render(request, 'charity/request_donation.html', context)
 
 @transaction.atomic()
 def donate(request):

@@ -51,7 +51,7 @@ class Office(models.Model):
 
 
 class BaseItem(models.Model):
-    base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE, verbose_name='склад')
+    base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE)
     office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
 
 
@@ -68,7 +68,7 @@ class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)
     name = models.CharField(max_length=250)
     condition = models.CharField(max_length=250)
-    item_hash = models.IntegerField(db_column='item_description_hash')
+    item_hash = models.ForeignKey('Thing', db_column='item_description_hash', on_delete=models.CASCADE)
 
 
 class Collection(models.Model):
@@ -82,10 +82,11 @@ class Donation(Collection):
     pass
 
 class HelpRequest(Collection):
-   pass
+    pass
 
 class CompletedRequest(HelpRequest):
-    pass
+    class Meta:
+        proxy = True
 
 
 

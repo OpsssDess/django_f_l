@@ -1,0 +1,19 @@
+{% extends "charity/base.html"%}
+{%block title%}{%endblock%}
+{%block content%}
+<div class="container">
+    <p>
+        <form action='register_request' method="post">
+        {% csrf_token %}
+        <input type="hidden" name="amount" id="amount" value="{{N}}">
+        {% with ''|center:N as range %}
+        {% for _ in range %}
+        {{ forloop.counter }}
+        {{ item_form.as_p }}
+        {% endfor %}
+        {% endwith %}
+        <button type="submit">Отправить!</button>
+        </form>
+    </p>
+</div>
+{%endblock%}

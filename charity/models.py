@@ -72,7 +72,7 @@ class ItemDescription(DonationItem):
 
 
 class Collection(models.Model):
-    creation_date = models.DateTimeField()
+    creation_date = models.DateTimeField(auto_now_add=True)
     donation_hash = models.IntegerField()
 
     class Meta:

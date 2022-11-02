@@ -31,13 +31,14 @@ def add_request(request):
     return render(request, 'charity/add_request.html', context)
 
 def register_request(request):
+    donat_id = Donation.objects.create(donation_hash='12345')
+    context = {
+        'id': donat_id.donation_hash,
+    }
     if request.method == 'POST':
         for i in range(int(request.POST['amount'])):
-            Thing.objects.create(name=request.POST.get(f'name_{i}'))
-        donat_id = Donation.objects.create(donation_hash='12345')
-    context = {
-        'id': donat_id,
-        }
+            Thing.objects.create(name=request.POST[f'name_{i+1}'], category_id=1)
+            print(request.POST[f'name_{i+1}'])
     return render(request, 'charity/request_donation.html', context)
 
 @transaction.atomic()

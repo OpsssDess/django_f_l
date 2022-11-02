@@ -8,8 +8,8 @@
         <input type="hidden" name="amount" id="amount" value="{{N}}">
         {% with ''|center:N as range %}
         {% for _ in range %}
-        {{ forloop.counter }}
-        {{ item_form.as_p }}
+            <p><b>name{{ forloop.counter }}:</b><br>
+            <input  type='text' name="name_{{ forloop.counter }}" id="name_{{ forloop.counter }}">
         {% endfor %}
         {% endwith %}
         <button type="submit">Отправить!</button>

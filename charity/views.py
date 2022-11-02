@@ -27,11 +27,10 @@ def add_request(request):
         'N': number,
         'item_form': ThingForm(),
     }
-
     return render(request, 'charity/add_request.html', context)
 
-def register_request(request):
-    donat_id = Donation.objects.create(donation_hash='12345')
+def register_help_request(request):
+    donat_id = Donation.objects.create()
     context = {
         'id': donat_id.donation_hash,
     }

@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -73,7 +75,7 @@ class ItemDescription(DonationItem):
 
 class Collection(models.Model):
     creation_date = models.DateTimeField(auto_now_add=True)
-    donation_hash = models.IntegerField()
+    donation_hash = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
         abstract = True
@@ -87,6 +89,8 @@ class HelpRequest(Collection):
 class CompletedRequest(HelpRequest):
     class Meta:
         proxy = True
+
+
 
 
 

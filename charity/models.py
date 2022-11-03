@@ -14,6 +14,8 @@ class Thing(models.Model):
     name = models.CharField(max_length=50, verbose_name='имя вещи')
     type_thing = models.CharField(max_length=255, verbose_name='тип вещи')
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    office = models.ForeignKey('Office', on_delete=models.CASCADE, default=1)
+    amount = models.IntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -31,6 +33,7 @@ class Category(models.Model):
     name_strategy = models.CharField(max_length=50, choices=CHOICES_STRATEGY)
 
 
+
 class Office(models.Model):
     address = models.CharField(max_length=250, verbose_name='склад')
     capacity = models.IntegerField(verbose_name='вместимость')
@@ -46,13 +49,13 @@ class Office(models.Model):
             models.CheckConstraint(check=models.Q(ocupied__lte=F('capacity')), name='ocupied_lte_capasity'),
         ]
 # cигнал с прошлой домашней работы
-# @receiver(signals.post_save, sender=Thing)
-# def counting_places(sender, instance, **kwargs):
-#     all_goods = Thing.objects.filter(office=instance.office).exclude(state='shipped')
-#     amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
-#     actual_stock = Office.objects.get(address=instance.office)
-#     actual_stock.ocupied = amount_all_goods['sum_amount']
-#     actual_stock.save()
+@receiver(signals.post_save, sender=Thing)
+def counting_places(sender, instance, **kwargs):
+    all_goods = Thing.objects.filter(office=instance.office).exclude(state='shipped')
+    amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
+    actual_stock = Office.objects.get(address=instance.office)
+    actual_stock.ocupied = amount_all_goods['sum_amount']
+    actual_stock.save()
 
 
 class BaseItem(models.Model):
@@ -79,7 +82,9 @@ class ItemDescription(DonationItem):
 class Collection(models.Model):
     CHOICES = (
         ('satisfied', 'satisfied'),
-        ('unsatisfied', 'unsatisfied')
+        ('unsatisfied', 'unsatisfied'),
+        ('available', 'available'),
+        ('booked', 'booked'),
     )
     creation_date = models.DateTimeField(auto_now_add=True)
     donation_hash = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)

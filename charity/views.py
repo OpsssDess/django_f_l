@@ -22,22 +22,26 @@ def index(request):
     return render(request, 'charity/index.html', context)
 
 def add_request(request):
-    number = request.POST.get('num')
     context = {
-        'N': number,
-        'item_form': ThingForm(),
+        'move': request.POST.get('move'),
+        'N': request.POST.get('num'),
     }
     return render(request, 'charity/add_request.html', context)
 
-def register_help_request(request):
-    donat_id = Donation.objects.create()
-    context = {
-        'id': donat_id.donation_hash,
-    }
+def req_or_donate(request):
+    print(request.POST['move'])
+
     if request.method == 'POST':
-        for i in range(int(request.POST['amount'])):
-            Thing.objects.create(name=request.POST[f'name_{i+1}'], category_id=1)
-            print(request.POST[f'name_{i+1}'])
+        if request.POST['move'] == 'request':
+            for i in range(int(request.POST['amount'])):
+                Thing.objects.create(name=request.POST[f'name_{i+1}'], category_id=1)
+                print(request.POST[f'name_{i+1}'])
+            unic = HelpRequest.objects.create()
+        else:
+            unic = Donation.objects.create()
+    context = {
+        'unic': unic.donation_hash,
+    }
     return render(request, 'charity/request_donation.html', context)
 
 @transaction.atomic()

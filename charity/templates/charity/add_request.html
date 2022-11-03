@@ -3,9 +3,10 @@
 {%block content%}
 <div class="container">
     <p>
-        <form action='register_request' method="post">
+        <form action='req_or_donate' method="post">
         {% csrf_token %}
         <input type="hidden" name="amount" id="amount" value="{{N}}">
+        <input type="hidden" name="move" id="move" value="{{move}}">
         {% with ''|center:N as range %}
         {% for _ in range %}
             <p><b>name{{ forloop.counter }}:</b><br>

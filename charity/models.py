@@ -6,6 +6,9 @@ from django.dispatch import receiver
 from django.db.models import Sum
 from django.db.models import Q, F
 
+class CompletedRequestManager(models.Model):
+    def get_queryset(self):
+        return super().get_queryset().filter(status='satisfied')
 
 class Thing(models.Model):
     name = models.CharField(max_length=50, verbose_name='имя вещи')
@@ -74,8 +77,13 @@ class ItemDescription(DonationItem):
 
 
 class Collection(models.Model):
+    CHOICES = (
+        ('satisfied', 'satisfied'),
+        ('unsatisfied', 'unsatisfied')
+    )
     creation_date = models.DateTimeField(auto_now_add=True)
     donation_hash = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    status = models.CharField(max_length=250, choices=CHOICES)
 
     class Meta:
         abstract = True
@@ -89,6 +97,8 @@ class HelpRequest(Collection):
 class CompletedRequest(HelpRequest):
     class Meta:
         proxy = True
+
+    object = CompletedRequestManager()
 
 
 

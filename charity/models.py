@@ -13,9 +13,8 @@ class CompletedRequestManager(models.Model):
 class Thing(models.Model):
     name = models.CharField(max_length=50, verbose_name='имя вещи')
     type_thing = models.CharField(max_length=255, verbose_name='тип вещи')
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
-    office = models.ForeignKey('Office', on_delete=models.CASCADE, default=1)
-    amount = models.IntegerField(default=1)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, default=1)
+    amount = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -48,29 +47,33 @@ class Office(models.Model):
         constraints = [
             models.CheckConstraint(check=models.Q(ocupied__lte=F('capacity')), name='ocupied_lte_capasity'),
         ]
-# cигнал с прошлой домашней работы
-@receiver(signals.post_save, sender=Thing)
-def counting_places(sender, instance, **kwargs):
-    all_goods = Thing.objects.filter(office=instance.office).exclude(state='shipped')
-    amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
-    actual_stock = Office.objects.get(address=instance.office)
-    actual_stock.ocupied = amount_all_goods['sum_amount']
-    actual_stock.save()
 
 
 class BaseItem(models.Model):
     base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE)
     office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
 
-
-class RequestItem(BaseItem):
-    request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
-    donation_item = models.ForeignKey('DonationItem', on_delete=models.CASCADE)
-
+# amount_all_goods['sum_amount']
 
 class DonationItem(BaseItem):
     state = models.CharField(max_length=250)
     donation = models.ForeignKey('Donation', on_delete=models.CASCADE)
+
+@receiver(signals.post_save, sender=DonationItem)
+def counting_places(sender, instance, **kwargs):
+    all_goods = BaseItem.objects.filter(office=instance.office.pk)
+    count = 0
+    for i in all_goods:
+        count += i.base_item_hash.amount
+    # amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
+    actual_stock = Office.objects.get(pk=instance.office.pk)
+    actual_stock.ocupied = count
+    actual_stock.save()
+
+
+class RequestItem(BaseItem):
+    request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
+
 
 class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)
@@ -80,24 +83,26 @@ class ItemDescription(DonationItem):
 
 
 class Collection(models.Model):
-    CHOICES = (
-        ('satisfied', 'satisfied'),
-        ('unsatisfied', 'unsatisfied'),
-        ('available', 'available'),
-        ('booked', 'booked'),
-    )
     creation_date = models.DateTimeField(auto_now_add=True)
     donation_hash = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    status = models.CharField(max_length=250, choices=CHOICES)
 
     class Meta:
         abstract = True
 
 class Donation(Collection):
-    pass
+    CHOICES = (
+        ('available', 'available'),
+        ('booked', 'booked'),
+    )
+    status_donation = models.CharField(max_length=250, choices=CHOICES, default='available', blank=True)
 
 class HelpRequest(Collection):
-    pass
+    CHOICES = (
+        ('satisfied', 'satisfied'),
+        ('unsatisfied', 'unsatisfied'),
+    )
+    status_help_request = models.CharField(max_length=250, choices=CHOICES, default='unsatisfied', blank=True)
+
 
 class CompletedRequest(HelpRequest):
     class Meta:

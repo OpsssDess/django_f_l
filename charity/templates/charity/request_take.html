@@ -1,14 +1,14 @@
 {% extends "charity/base.html"%}
+{% load crispy_forms_tags %}
 {%block title%}{%endblock%}
 {%block content%}
 <div class="container">
     <section>
-        <h2>Подойдите к окну</h2>
-        {%if availability%}
-        <p>Возьмите {{ take_good }}, в количестве 1</p>
-        {% else %}
-        <p>Сейчас на складе ничего нет</p>
-        {%endif%}
+        <div>
+            <p>Выберите вещь</p>
+            {% csrf_token %}
+            {{create_req|crispy}}
+        </div>
     </section>
 </div>
 {%endblock%}

@@ -1,9 +1,6 @@
-import json
-
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
 from django.db import transaction, IntegrityError
-from django.db.models import Q, F
+from django.forms import formset_factory, modelformset_factory
 
 from charity.forms import *
 
@@ -15,7 +12,7 @@ def index(request):
         button_disabled = office.ocupied >= office.capacity
 
     context = {
-        'form': DonateForm(),
+        'form': ThingForm(),
         'officeForm': OfficeForm(),
         'button_disabled': button_disabled,
     }
@@ -24,17 +21,22 @@ def index(request):
 
 @transaction.atomic()
 def donate(request):
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    donation = Donation.objects.create()
+    context = {
+        'unic': donation.donation_hash
+    }
     if request.method == 'POST':
-        form = DonateForm(request.POST)
+        form = ThingForm(request.POST)
         if form.is_valid():
-            Good = form.save(commit=False)
-            Good.office = Office.objects.select_for_update().get(id=request.session['office_id'])
-            if Good.office.capacity > Good.amount + Good.office.ocupied:
-                Good.save()
-                form.save_m2m()
-            else:
-                form.add_error(Good.amount, 'слишком большое количество вещей!')
-    return redirect('main')
+            thing = form.save()
+            DonationItem.objects.create(
+                donation_id=donation.id,
+                base_item_hash_id=thing.pk,
+                office_id=actual_office.pk
+            )
+    return render(request, 'charity/tnx.html', context)
+
 
 def ask_good(request):
     availability = Thing.objects.all().exists()
@@ -55,25 +57,57 @@ def set_session_office(request):
         request.session['office_id'] = form.cleaned_data['officeChoise'].id
     return redirect('main')
 
-def add_request(request):
+def add_request_donate(request):
+    count_things = request.POST.get('num')
+    print(request.POST['move'])
+    if request.POST['move'] == 'donate':
+        move = ThingForm()
+        link = 'donate'
+    else:
+        move = ItemFormChoise()
+        link = 'request'
     context = {
-        'move': request.POST.get('move'),
-        'N': request.POST.get('num'),
+        'link': link,
+        'form': move,
+        'N': count_things,
     }
     return render(request, 'charity/add_request.html', context)
 
-def req_or_donate(request):
-    print(request.POST['move'])
-
+def create_donate(request):
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    donation = Donation.objects.create()
     if request.method == 'POST':
-        if request.POST['move'] == 'request':
-            for i in range(int(request.POST['amount'])):
-                Thing.objects.create(name=request.POST[f'name_{i+1}'], category_id=1)
-                print(request.POST[f'name_{i+1}'])
-            unic = HelpRequest.objects.create()
-        else:
-            unic = Donation.objects.create()
+        form = ThingForm(request.POST)
+        if form.is_valid():
+            thing = form.save()
+            DonationItem.objects.create(
+                donation_id=donation.id,
+                base_item_hash=Thing.objects.get(id=thing.id),
+                office_id=actual_office.pk
+                )
     context = {
-        'unic': unic.donation_hash,
+        'unic': donation.donation_hash
     }
     return render(request, 'charity/tnx.html', context)
+
+
+
+def processing_request_item(request):
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    help_request = HelpRequest.objects.create()
+    if request.method == 'POST':
+        req_thing = Thing.objects.get(pk=request.POST['thing_choice'])
+        RequestItem.objects.create(
+            office_id=actual_office.pk,
+            base_item_hash_id=req_thing.pk,
+            request_id=help_request.id
+        )
+    context = {
+        'unic': help_request.donation_hash
+    }
+    return render(request, 'charity/tnx.html', context)
+
+
+def list_donation(request):
+    context = {'data': DonationItem.objects.all()}
+    return render(request, 'charity/list_donations.html', context)

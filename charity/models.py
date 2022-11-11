@@ -53,7 +53,6 @@ class BaseItem(models.Model):
     base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE)
     office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
 
-# amount_all_goods['sum_amount']
 
 class DonationItem(BaseItem):
     state = models.CharField(max_length=250)
@@ -117,12 +116,6 @@ class CompletedRequest(HelpRequest):
 
 
 # class ItemMedia(models.Model):
-#     STATUS = (
-#         ('requested', 'requested'),
-#         ('available', 'available'),
-#         ('booked', 'booked'),
-#         ('shipped', 'shipped'),
-#     )
 #     title = models.CharField(max_length=250)
 #     file = models.FileField(upload_to='files')
 #     type = models.CharField(max_length=250)

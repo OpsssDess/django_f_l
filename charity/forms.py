@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import formset_factory, BaseModelFormSet, modelformset_factory
+from django.forms import formset_factory, BaseModelFormSet, modelformset_factory, Textarea
 from charity.models import *
 
 
@@ -21,10 +21,7 @@ class OfficeFormChoise(forms.Form):
 
 
 class ItemFormChoise(forms.Form):
-    thing_choice = forms.ModelChoiceField(
-        queryset=Thing.objects.all(),
-        widget=forms.Select(attrs={"onChange": 'form.submit();'}),
-    )
+    thing_choice = forms.ModelChoiceField(queryset=Thing.objects.all())
     amount = forms.IntegerField()
 
 

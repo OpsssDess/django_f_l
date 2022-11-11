@@ -12,7 +12,6 @@
     <h3>Регистрация прошения</h3>
     <form action="add_request_donate" method="post">
         {% csrf_token %}
-        <input type="hidden" name="move" id="request" value="request">
         <p>Сколько хотите попросить категорий? (от 1 до 10):</p>
         <p><input type="number" size="3" name="num" min="1" max="10" value="1"></p>
         <button type="submit">перейти</button>
@@ -29,18 +28,6 @@
         </form>
     </p>
 </div>
-
-
-<div class="container">
-    <h3>Здесь можно отдать свои вещи:</h3>
-    <form action="add_request_donate" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="move" id="donate" value="donate">
-        <p>Сколько хотите отдать? (от 1 до 10):</p>
-        <p><input type="number" size="3" name="num" min="1" max="10" value="1"></p>
-        <button type="submit">перейти</button>
-    </form>
-
 
 </div>
 {%endblock%}

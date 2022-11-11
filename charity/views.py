@@ -24,7 +24,8 @@ def donate(request):
     actual_office = Office.objects.get(id=request.session['office_id'])
     donation = Donation.objects.create()
     context = {
-        'unic': donation.donation_hash
+        'unic': donation.donation_hash,
+        'label': False,
     }
     if request.method == 'POST':
         form = ThingForm(request.POST)
@@ -38,58 +39,20 @@ def donate(request):
     return render(request, 'charity/tnx.html', context)
 
 
-def ask_good(request):
-    availability = Thing.objects.all().exists()
-    if availability:
-        last_good = Thing.objects.order_by('-pk')[0]
-        last_good.amount -= 1
-        last_good.save()
-        if last_good.amount == 0:
-            last_good.delete()
-        context = {'availability': availability, 'take_good': last_good.thing}
-        return render(request, 'charity/request_take.html', context)
-    else:
-        return render(request, 'charity/request_take.html')
-
 def set_session_office(request):
     form = OfficeFormChoise(data=request.POST)
     if form.is_valid():
         request.session['office_id'] = form.cleaned_data['officeChoise'].id
     return redirect('main')
 
+
 def add_request_donate(request):
     count_things = request.POST.get('num')
-    print(request.POST['move'])
-    if request.POST['move'] == 'donate':
-        move = ThingForm()
-        link = 'donate'
-    else:
-        move = ItemFormChoise()
-        link = 'request'
     context = {
-        'link': link,
-        'form': move,
+        'form': ItemFormChoise,
         'N': count_things,
     }
     return render(request, 'charity/add_request.html', context)
-
-def create_donate(request):
-    actual_office = Office.objects.get(id=request.session['office_id'])
-    donation = Donation.objects.create()
-    if request.method == 'POST':
-        form = ThingForm(request.POST)
-        if form.is_valid():
-            thing = form.save()
-            DonationItem.objects.create(
-                donation_id=donation.id,
-                base_item_hash=Thing.objects.get(id=thing.id),
-                office_id=actual_office.pk
-                )
-    context = {
-        'unic': donation.donation_hash
-    }
-    return render(request, 'charity/tnx.html', context)
-
 
 
 def processing_request_item(request):
@@ -103,9 +66,34 @@ def processing_request_item(request):
             request_id=help_request.id
         )
     context = {
-        'unic': help_request.donation_hash
+        'unic': help_request.donation_hash,
+        'label': True,
     }
     return render(request, 'charity/tnx.html', context)
+
+def change_request_status(request):
+    hash = request.GET['hash']
+
+    help_request = HelpRequest.objects.get(donation_hash=uuid.UUID(hash))
+    help_request.status_help_request = 'satisfied'
+    help_request.save()
+
+    req_item = RequestItem.objects.get(request_id=help_request.pk)
+
+    good = Thing.objects.get(pk=req_item.base_item_hash_id)
+    good.amount -= 1
+    good.save()
+
+    donation_item = DonationItem.objects.get(base_item_hash=good.pk)
+
+    donation = Donation.objects.get(pk=donation_item.donation_id)
+    donation.status_donation = 'booked'
+    donation.save()
+
+    context = {
+        'good': good,
+    }
+    return render(request, 'charity/end.html', context)
 
 
 def list_donation(request):

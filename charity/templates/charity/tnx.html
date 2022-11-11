@@ -3,7 +3,13 @@
 {%block content%}
 <div class="container">
     <h2>Спасибо!!!</h2>
-
     <h2>Ваш номер запроса: {{unic}}</h2>
+    {%if label %}
+        <form action="change_request_status" method="get">
+        {% csrf_token %}
+        <input type="hidden" name="hash" id="hash" value="{{unic}}">
+        <button type="submit">Забрать вещь</button>
+    </form>
+    {%endif%}
 </div>
 {%endblock%}

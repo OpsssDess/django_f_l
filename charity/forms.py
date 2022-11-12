@@ -25,8 +25,8 @@ class ItemFormChoise(forms.Form):
     amount = forms.IntegerField()
 
 
-class ItemDescriptionForm():
-    model = ItemDescription
+class ItemDescriptionForm(forms.ModelForm):
     class Meta:
-        fields = ['']
+        model = ItemDescription
+        fields = ['details', 'name', 'condition', 'base_item_hash', 'office', 'image']
 

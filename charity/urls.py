@@ -10,4 +10,5 @@ urlpatterns = [
     path('list_donation', list_donation),
     path('processing_request_item', processing_request_item),
     path('change_request_status', change_request_status),
+    path('add_description', add_description),
     ]

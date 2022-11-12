@@ -15,6 +15,7 @@ def index(request):
         'form': ThingForm(),
         'officeForm': OfficeForm(),
         'button_disabled': button_disabled,
+        'form_d': ItemDescriptionForm(),
     }
     return render(request, 'charity/index.html', context)
 
@@ -71,6 +72,8 @@ def processing_request_item(request):
     }
     return render(request, 'charity/tnx.html', context)
 
+
+@transaction.atomic()
 def change_request_status(request):
     hash = request.GET['hash']
 
@@ -99,3 +102,22 @@ def change_request_status(request):
 def list_donation(request):
     context = {'data': DonationItem.objects.all()}
     return render(request, 'charity/list_donations.html', context)
+
+'''добавить корректную ссылку на донат в итем'''
+def add_description(request):
+    donate_item = DonationItem.objects.get()
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    donation = Donation.objects.create()
+    context = {
+        'unic': donation.donation_hash,
+        'label': False,
+    }
+    if request.method == 'POST':
+        form = ItemDescriptionForm(request.POST)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.donation_id = donation.pk
+            item.save()
+            form.save_m2m()
+
+    return render(request, 'charity/tnx.html', context)

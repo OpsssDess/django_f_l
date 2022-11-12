@@ -29,5 +29,17 @@
     </p>
 </div>
 
+    <div class="container">
+    <h3>Опишите вещь, которую хотите отдать</h3>
+    <p>
+        <form action='add_description' method="post">
+        {% csrf_token %}
+        {{ form_d|crispy }}
+        <button type="submit">Отправить!</button>
+        </form>
+
+    </p>
 </div>
+</div>
+
 {%endblock%}

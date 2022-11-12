@@ -31,6 +31,8 @@ class Category(models.Model):
     )
     name_strategy = models.CharField(max_length=50, choices=CHOICES_STRATEGY)
 
+    def __str__(self):
+        return self.name_strategy
 
 
 class Office(models.Model):
@@ -78,7 +80,7 @@ class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)
     name = models.CharField(max_length=250)
     condition = models.CharField(max_length=250)
-    item_hash = models.ForeignKey('Thing', db_column='item_description_hash', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True)
 
 
 class Collection(models.Model):
@@ -94,6 +96,7 @@ class Donation(Collection):
         ('booked', 'booked'),
     )
     status_donation = models.CharField(max_length=250, choices=CHOICES, default='available', blank=True)
+
 
 class HelpRequest(Collection):
     CHOICES = (

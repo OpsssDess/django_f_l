@@ -45,7 +45,39 @@ class ItemDescriptionAdmin(admin.ModelAdmin):
     list_display = ('name', 'details', 'condition', 'base_item_hash', 'office', 'get_html_image')
     list_display_links = ('name', 'details', 'condition',)
     search_fields = ('base_item_hash', 'office')
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'base_item_hash', 'office')
+        }),
+        ('Advanced options', {
+            'fields': ('condition', 'details',),
+        }),
+    )
 
     def get_html_image(self, object):
         if object.image:
             return mark_safe(f"<img src='{object.image.url}' width=50>")
+
+
+@admin.register(Donation)
+class DonationAdmin(admin.ModelAdmin):
+    @admin.action(description='Change status to booked')
+    def make_status(DonationAdmin, request, queryset):
+        queryset.update(status_donation='booked')
+
+    list_display = ('creation_date', 'donation_hash', 'status_donation')
+    list_display_links = ('status_donation',)
+    list_filter = ('status_donation',)
+    actions = [make_status]
+
+
+@admin.register(HelpRequest)
+class HelpRequestAdmin(admin.ModelAdmin):
+    @admin.action(description='Change status to satisfied')
+    def make_status(HelpRequestAdmin, request, queryset):
+        queryset.update(status_help_request='satisfied')
+
+    list_display = ('creation_date', 'donation_hash', 'status_help_request')
+    list_display_links = ('status_help_request',)
+    list_filter = ('status_help_request',)
+    actions = [make_status]

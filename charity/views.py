@@ -1,6 +1,9 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.db import transaction, IntegrityError
 from django.forms import formset_factory, modelformset_factory
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView
 
 from charity.forms import *
 
@@ -100,7 +103,13 @@ def change_request_status(request):
 
 
 def list_donation(request):
-    context = {'data': DonationItem.objects.all()}
+    don_list = DonationItem.objects.all()
+    paginator = Paginator(don_list, 5)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {'page_obj': page_obj,}
     return render(request, 'charity/list_donations.html', context)
 
 '''добавить корректную ссылку на донат в итем'''
@@ -121,3 +130,17 @@ def add_description(request):
             form.save_m2m()
 
     return render(request, 'charity/tnx.html', context)
+
+class CompletedRequestView(ListView):
+    template_name = 'charity/request_list.html'
+    model = RequestItem
+    context_object_name = 'requests'
+    paginate_by = 10
+
+def login(request):
+    return redirect('main')
+
+class RegisterUser(CreateView):
+    form_class = RegUserForm
+    template_name = 'charity/register.html'
+    success_url = reverse_lazy('login')

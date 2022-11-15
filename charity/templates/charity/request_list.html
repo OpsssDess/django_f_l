@@ -1,0 +1,51 @@
+{% extends "charity/base.html"%}
+{%block title%}{%endblock%}
+{%block content%}
+{% if requests %}
+<div>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">address</th>
+            <th scope="col">donation_id</th>
+            <th scope="col">State</th>
+            <th scope="col">type</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in requests %}
+        <tr>
+            <td>{{ r.base_item_hash }}</td>
+            <td>{{ r.office }}</td>
+            <td>{{ r.request.donation_hash }}</td>
+            <td>{{ r.request.status_help_request }}</td>
+            <td>{{ r.base_item_hash.type_thing }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+    </div>
+
+    {% else %}
+    <h5>Сейчас ничего нет</h5>
+    {% endif %}
+</div>
+{%endblock%}

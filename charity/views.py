@@ -1,3 +1,6 @@
+from django.contrib.auth import logout, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.db import transaction, IntegrityError
@@ -137,10 +140,25 @@ class CompletedRequestView(ListView):
     context_object_name = 'requests'
     paginate_by = 10
 
-def login(request):
-    return redirect('main')
 
 class RegisterUser(CreateView):
     form_class = RegUserForm
     template_name = 'charity/register.html'
-    success_url = reverse_lazy('login')
+    success_url = reverse_lazy('register')
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('main')
+
+
+class LoginUser(LoginView):
+    form_class = AuthenticationForm
+    template_name = 'charity/login.html'
+
+    def get_success_url(self):
+        return reverse_lazy('main')
+
+def logout_user(request):
+    logout(request)
+    return redirect('login')

@@ -7,8 +7,8 @@ urlpatterns = [
     path('set_session_office', set_session_office, name='set_session_office'),
     path('donate', donate),
 
-    path('login', login, name='login'),
-
+    path('login', LoginUser.as_view(), name='login'),
+    path('logout', logout_user, name='logout'),
     path('register', RegisterUser.as_view(), name='register'),
 
     path('completed_request', CompletedRequestView.as_view(), name='completed_request_list'),

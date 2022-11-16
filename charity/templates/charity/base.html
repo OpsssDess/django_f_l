@@ -20,7 +20,11 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="completed_request">Запросы</a>
                 </li>
-
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" {{user.username }} href='logout'> Выйти</a>
+                </li>
+                {% else %}
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href='register'> Регистрация</a>
                 </li>
@@ -28,6 +32,7 @@
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href='login'> Войти </a>
                 </li>
+                {% endif %}
             </ul>
         </div>
         <form class="d-flex" role="search" action="{% url 'set_session_office' %}" method="post">

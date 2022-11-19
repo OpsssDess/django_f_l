@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
-from django.db import transaction, IntegrityError
+from django.db import transaction
 from django.forms import formset_factory, modelformset_factory
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
@@ -19,37 +19,62 @@ def index(request):
 
     context = {
         'form': ThingForm(),
-        'officeForm': OfficeForm(),
         'button_disabled': button_disabled,
         'form_d': ItemDescriptionForm(),
+        'form_donate': DonationItemForm(),
     }
     return render(request, 'charity/index.html', context)
-
-
-@transaction.atomic()
-def donate(request):
-    actual_office = Office.objects.get(id=request.session['office_id'])
-    donation = Donation.objects.create()
-    context = {
-        'unic': donation.donation_hash,
-        'label': False,
-    }
-    if request.method == 'POST':
-        form = ThingForm(request.POST)
-        if form.is_valid():
-            thing = form.save()
-            DonationItem.objects.create(
-                donation_id=donation.id,
-                base_item_hash_id=thing.pk,
-                office_id=actual_office.pk
-            )
-    return render(request, 'charity/tnx.html', context)
 
 
 def set_session_office(request):
     form = OfficeFormChoise(data=request.POST)
     if form.is_valid():
         request.session['office_id'] = form.cleaned_data['officeChoise'].id
+    return redirect('main')
+
+
+def create_donate_or_help(request):
+    print(request.POST)
+    if request.method == 'POST':
+        if request.POST['question'] == 'donate':
+            move = Donation.objects.create()
+            context = {
+                'move_hash': move.donation_hash,
+                'form': DonationItemForm(),
+                'label': True,
+            }
+            return render(request, 'charity/Donate.html', context)
+        else:
+            move = HelpRequest.objects.create()
+            context = {
+                'move_hash': move.donation_hash,
+                'form': RequestItemForm(),
+                'label': False,
+
+            }
+            return render(request, 'charity/Donate.html', context)
+
+    # return render(request, 'charity/donate', context)
+
+
+@transaction.atomic()
+def donate2(request):
+    donate = Donation.objects.order_by('-creation_date')[0]
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    context = {'unic': donate.donation_hash}
+    if request.method == 'POST':
+        form = DonationItemForm(data=request.POST)
+        if form.is_valid():
+            new_don_item = form.save(commit=False)
+            new_don_item.donation_id = donate.pk
+            new_don_item.office_id = actual_office.pk
+            new_don_item.save()
+            form.save_m2m()
+    return render(request, 'charity/tnx.html', context)
+
+
+def create_help_request(request):
+
     return redirect('main')
 
 
@@ -112,10 +137,33 @@ def list_donation(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {'page_obj': page_obj,}
+    context = {'page_obj': page_obj, }
     return render(request, 'charity/list_donations.html', context)
 
+
+@transaction.atomic()
+def donate(request):
+    actual_office = Office.objects.get(id=request.session['office_id'])
+    donation = Donation.objects.create()
+    context = {
+        'unic': donation.donation_hash,
+        'label': False,
+    }
+    if request.method == 'POST':
+        form = ThingForm(request.POST)
+        if form.is_valid():
+            thing = form.save()
+            DonationItem.objects.create(
+                donation_id=donation.id,
+                base_item_hash_id=thing.pk,
+                office_id=actual_office.pk
+            )
+    return render(request, 'charity/tnx.html', context)
+
+
 '''добавить корректную ссылку на донат в итем'''
+
+
 def add_description(request):
     donate_item = DonationItem.objects.get()
     actual_office = Office.objects.get(id=request.session['office_id'])
@@ -133,6 +181,7 @@ def add_description(request):
             form.save_m2m()
 
     return render(request, 'charity/tnx.html', context)
+
 
 class CompletedRequestView(ListView):
     template_name = 'charity/request_list.html'
@@ -158,6 +207,7 @@ class LoginUser(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('main')
+
 
 def logout_user(request):
     logout(request)

@@ -15,7 +15,7 @@ class ThingAdmin(admin.ModelAdmin):
     search_fields = ('name', 'type_thing', 'category')
     readonly_fields = ('category',)
     list_filter = ('category', 'type_thing')
-    inlines = [DonationInline]
+    # inlines = [DonationInline]
 
 
 class OfficeAdmin(admin.ModelAdmin):

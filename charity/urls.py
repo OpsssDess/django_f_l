@@ -4,6 +4,10 @@ from charity.views import *
 
 urlpatterns = [
     path('', index, name='main'),
+    path('create_donate_or_help', create_donate_or_help, name='create_donate_or_help'),
+    path('donate2', donate2),
+    path('create_help_request', create_help_request),
+
     path('set_session_office', set_session_office, name='set_session_office'),
     path('donate', donate),
 

@@ -18,81 +18,32 @@ def index(request):
         button_disabled = office.ocupied >= office.capacity
 
     context = {
-        # 'form': ThingForm(),
+        'form': ThingForm(),
         'officeForm': OfficeForm(),
         'button_disabled': button_disabled,
         'form_d': ItemDescriptionForm(),
     }
     return render(request, 'charity/index.html', context)
 
-def choice_move(request):
-    if request.method == 'POST':
-        if request.POST['question'] == 'donate':
-            donate = Donation.objects.create()
-            context = {
-                'unic': donate.donation_hash,
-                'form': DonationItemForm(),
-            }
-            return render(request, 'charity/donate.html', context)
-        else:
-            help_request = HelpRequest.objects.create()
-            context = {
-                'unic': help_request.donation_hash,
-                'form': RequestItemForm()
-            }
-            return render(request, 'charity/help_request.html', context)
 
 @transaction.atomic()
-def donate2(request):
-    donate = Donation.objects.order_by('-creation_date')[0]
+def donate(request):
     actual_office = Office.objects.get(id=request.session['office_id'])
-    context = {'unic': donate.donation_hash}
-    if request.method == 'POST':
-        form = DonationItemForm(data=request.POST)
-        if form.is_valid():
-            new_don_item = form.save(commit=False)
-            new_don_item.donation_id = donate.pk
-            new_don_item.office_id = actual_office.pk
-            new_don_item.save()
-            form.save_m2m()
-    return render(request, 'charity/tnx.html', context)
-
-
-def help_request(request):
-    help_req = Donation.objects.order_by('-creation_date')[0]
-    actual_office = Office.objects.get(id=request.session['office_id'])
+    donation = Donation.objects.create()
     context = {
-        'unic': help_req.donation_hash
+        'unic': donation.donation_hash,
+        'label': False,
     }
     if request.method == 'POST':
-        form = RequestItemForm(data=request.POST)
+        form = ThingForm(request.POST)
         if form.is_valid():
-            r_item = form.save(commit=False)
-            r_item.donation_id = help_req.pk
-            r_item.office_id = actual_office.pk
-            r_item.save()
-            form.save_m2m()
-
+            thing = form.save()
+            DonationItem.objects.create(
+                donation_id=donation.id,
+                base_item_hash_id=thing.pk,
+                office_id=actual_office.pk
+            )
     return render(request, 'charity/tnx.html', context)
-
-# @transaction.atomic()
-# def donate(request):
-#     actual_office = Office.objects.get(id=request.session['office_id'])
-#     donation = Donation.objects.create()
-#     context = {
-#         'unic': donation.donation_hash,
-#         'label': False,
-#     }
-#     if request.method == 'POST':
-#         form = ThingForm(request.POST)
-#         if form.is_valid():
-#             thing = form.save()
-#             DonationItem.objects.create(
-#                 donation_id=donation.id,
-#                 base_item_hash_id=thing.pk,
-#                 office_id=actual_office.pk
-#             )
-#     return render(request, 'charity/tnx.html', context)
 
 
 def set_session_office(request):

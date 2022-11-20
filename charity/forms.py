@@ -4,21 +4,11 @@ from django.contrib.auth.models import User
 from django.forms import formset_factory, BaseModelFormSet, modelformset_factory, Textarea
 from charity.models import *
 
-class DonationItemForm(forms.ModelForm):
+
+class ThingForm(forms.ModelForm):
     class Meta:
-        model = DonationItem
-        exclude = ['donation', 'office']
-
-
-class RequestItemForm(forms.ModelForm):
-    class Meta:
-        model = RequestItem
-        fields = ['request', 'office']
-
-# class ThingForm(forms.ModelForm):
-#     class Meta:
-#         model = Thing
-#         fields = ['name', 'type_thing', 'category', 'amount']
+        model = Thing
+        fields = ['name', 'type_thing', 'category', 'amount']
 
 class OfficeForm(forms.ModelForm):
     class Meta:

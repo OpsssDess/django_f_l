@@ -14,6 +14,7 @@ class Thing(models.Model):
     name = models.CharField(max_length=50, verbose_name='имя вещи')
     type_thing = models.CharField(max_length=255, verbose_name='тип вещи')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, default=1)
+    amount = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -58,23 +59,22 @@ class BaseItem(models.Model):
 class DonationItem(BaseItem):
     state = models.CharField(max_length=250)
     donation = models.ForeignKey('Donation', on_delete=models.CASCADE)
-    amount = models.IntegerField(default=1)
 
-# @receiver(signals.post_save, sender=DonationItem)
-# def counting_places(sender, instance, **kwargs):
-#     all_goods = BaseItem.objects.filter(office=instance.office.pk)
-#     count = 0
-#     for i in all_goods:
-#         count += i.base_item_hash.amount
-#     # amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
-#     actual_stock = Office.objects.get(pk=instance.office.pk)
-#     actual_stock.ocupied = count
-#     actual_stock.save()
+@receiver(signals.post_save, sender=DonationItem)
+def counting_places(sender, instance, **kwargs):
+    all_goods = BaseItem.objects.filter(office=instance.office.pk)
+    count = 0
+    for i in all_goods:
+        count += i.base_item_hash.amount
+    # amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
+    actual_stock = Office.objects.get(pk=instance.office.pk)
+    actual_stock.ocupied = count
+    actual_stock.save()
 
 
 class RequestItem(BaseItem):
     request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
-    amount_it = models.IntegerField(default=1)
+
 
 class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)

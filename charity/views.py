@@ -68,7 +68,7 @@ def help_request(request):
         form = RequestItemForm(data=request.POST)
         if form.is_valid():
             r_item = form.save(commit=False)
-            r_item.donation_id = help_req.pk
+            r_item.request_id = help_req.pk
             r_item.office_id = actual_office.pk
             r_item.save()
             form.save_m2m()

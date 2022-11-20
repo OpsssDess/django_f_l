@@ -74,7 +74,7 @@ class DonationItem(BaseItem):
 
 class RequestItem(BaseItem):
     request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
-    amount_it = models.IntegerField(default=1)
+    amount_req_item = models.IntegerField(default=1)
 
 class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)

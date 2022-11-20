@@ -13,7 +13,7 @@ class DonationItemForm(forms.ModelForm):
 class RequestItemForm(forms.ModelForm):
     class Meta:
         model = RequestItem
-        fields = ['request', 'office']
+        exclude = ['request', 'office']
 
 # class ThingForm(forms.ModelForm):
 #     class Meta:

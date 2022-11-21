@@ -14,10 +14,8 @@ urlpatterns = [
     path('logout', logout_user, name='logout'),
     path('register', RegisterUser.as_view(), name='register'),
 
-    path('completed_request', CompletedRequestView.as_view(), name='completed_request_list'),
-    path('add_request_donate', add_request_donate),
+    path('completed_request', RequestItemView.as_view(), name='completed_request_list'),
     path('list_donation', list_donation),
-    path('processing_request_item', processing_request_item),
-    path('change_request_status', change_request_status),
+    # path('change_request_status', change_request_status),
     path('add_description', add_description),
 ]

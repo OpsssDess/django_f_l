@@ -2,6 +2,7 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.db import transaction, IntegrityError
 from django.forms import formset_factory, modelformset_factory
@@ -59,10 +60,11 @@ def donate2(request):
 
 
 def help_request(request):
-    help_req = Donation.objects.order_by('-creation_date')[0]
+    help_req = HelpRequest.objects.order_by('-creation_date')[0]
     actual_office = Office.objects.get(id=request.session['office_id'])
     context = {
-        'unic': help_req.donation_hash
+        'unic': help_req.donation_hash,
+        'label': True,
     }
     if request.method == 'POST':
         form = RequestItemForm(data=request.POST)
@@ -75,25 +77,6 @@ def help_request(request):
 
     return render(request, 'charity/tnx.html', context)
 
-# @transaction.atomic()
-# def donate(request):
-#     actual_office = Office.objects.get(id=request.session['office_id'])
-#     donation = Donation.objects.create()
-#     context = {
-#         'unic': donation.donation_hash,
-#         'label': False,
-#     }
-#     if request.method == 'POST':
-#         form = ThingForm(request.POST)
-#         if form.is_valid():
-#             thing = form.save()
-#             DonationItem.objects.create(
-#                 donation_id=donation.id,
-#                 base_item_hash_id=thing.pk,
-#                 office_id=actual_office.pk
-#             )
-#     return render(request, 'charity/tnx.html', context)
-
 
 def set_session_office(request):
     form = OfficeFormChoise(data=request.POST)
@@ -102,56 +85,27 @@ def set_session_office(request):
     return redirect('main')
 
 
-def add_request_donate(request):
-    count_things = request.POST.get('num')
-    context = {
-        'form': ItemFormChoise,
-        'N': count_things,
-    }
-    return render(request, 'charity/add_request.html', context)
-
-
-def processing_request_item(request):
-    actual_office = Office.objects.get(id=request.session['office_id'])
-    help_request = HelpRequest.objects.create()
-    if request.method == 'POST':
-        req_thing = Thing.objects.get(pk=request.POST['thing_choice'])
-        RequestItem.objects.create(
-            office_id=actual_office.pk,
-            base_item_hash_id=req_thing.pk,
-            request_id=help_request.id
-        )
-    context = {
-        'unic': help_request.donation_hash,
-        'label': True,
-    }
-    return render(request, 'charity/tnx.html', context)
-
-
-@transaction.atomic()
-def change_request_status(request):
-    hash = request.GET['hash']
-
-    help_request = HelpRequest.objects.get(donation_hash=uuid.UUID(hash))
-    help_request.status_help_request = 'satisfied'
-    help_request.save()
-
-    req_item = RequestItem.objects.get(request_id=help_request.pk)
-
-    good = Thing.objects.get(pk=req_item.base_item_hash_id)
-    good.amount -= 1
-    good.save()
-
-    donation_item = DonationItem.objects.get(base_item_hash=good.pk)
-
-    donation = Donation.objects.get(pk=donation_item.donation_id)
-    donation.status_donation = 'booked'
-    donation.save()
-
-    context = {
-        'good': good,
-    }
-    return render(request, 'charity/end.html', context)
+# @transaction.atomic()
+# def change_request_status(request):
+#     hash = request.GET['hash']
+#
+#     help_request = HelpRequest.objects.get(donation_hash=uuid.UUID(hash))
+#     req_item = RequestItem.objects.get(request_id=help_request.pk)
+#     need_good = req_item.base_item_hash
+#     need_don_item = DonationItem.objects.get(base_item_hash__exact=need_good)
+#     if need_don_item:
+#         help_request.status_help_request = 'satisfied'
+#         help_request.save()
+#
+#         need_don_item.donation.status_donation = 'booked'
+#         need_don_item.save()
+#     else:
+#         return HttpResponse("Ваш запрос не удовлетворён, подождите!")
+#
+#     context = {
+#         'good': need_good,
+#     }
+#     return render(request, 'charity/end.html', context)
 
 
 def list_donation(request):
@@ -183,7 +137,7 @@ def add_description(request):
 
     return render(request, 'charity/tnx.html', context)
 
-class CompletedRequestView(ListView):
+class RequestItemView(ListView):
     template_name = 'charity/request_list.html'
     model = RequestItem
     context_object_name = 'requests'

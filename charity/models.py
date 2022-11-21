@@ -60,21 +60,43 @@ class DonationItem(BaseItem):
     donation = models.ForeignKey('Donation', on_delete=models.CASCADE)
     amount = models.IntegerField(default=1)
 
-# @receiver(signals.post_save, sender=DonationItem)
-# def counting_places(sender, instance, **kwargs):
-#     all_goods = BaseItem.objects.filter(office=instance.office.pk)
-#     count = 0
-#     for i in all_goods:
-#         count += i.base_item_hash.amount
-#     # amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
-#     actual_stock = Office.objects.get(pk=instance.office.pk)
-#     actual_stock.ocupied = count
-#     actual_stock.save()
+@receiver(signals.post_save, sender=DonationItem)
+def counting_places(sender, instance, **kwargs):
+    all_goods = DonationItem.objects.filter(office=instance.office.pk)
+    amount_all_goods = all_goods.aggregate(sum_amount=Sum('amount'))
+    actual_stock = Office.objects.get(pk=instance.office.pk)
+    actual_stock.ocupied = amount_all_goods['sum_amount']
+    actual_stock.save()
+
 
 
 class RequestItem(BaseItem):
     request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
     amount_req_item = models.IntegerField(default=1)
+
+@receiver(signals.post_save, sender=RequestItem)
+def change_status(sender, instance, **kwargs):
+    need_good = instance.base_item_hash
+    try:
+        need_don_item = DonationItem.objects.get(base_item_hash__exact=need_good)
+        if need_don_item.amount > instance.amount_req_item:
+            need_don_item.amount -= instance.amount_req_item
+            need_don_item.save()
+            need_don_item.donation.status_donation = 'used'
+            need_don_item.donation.save()
+
+        elif need_don_item.amount == instance.amount_req_item:
+            need_don_item.amount = 0
+            need_don_item.save()
+            need_don_item.donation.status_donation = 'booked'
+            need_don_item.donation.save()
+        instance.request.status_help_request = 'satisfied'
+        instance.request.save()
+
+    except DonationItem.DoesNotExist:
+        instance.request.status_help_request = 'waiting'
+        instance.request.save()
+
 
 class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)
@@ -94,6 +116,7 @@ class Donation(Collection):
     CHOICES = (
         ('available', 'available'),
         ('booked', 'booked'),
+        ('used', 'used'),
     )
     status_donation = models.CharField(max_length=250, choices=CHOICES, default='available', blank=True)
 
@@ -102,6 +125,7 @@ class HelpRequest(Collection):
     CHOICES = (
         ('satisfied', 'satisfied'),
         ('unsatisfied', 'unsatisfied'),
+        ('waiting', 'waiting'),
     )
     status_help_request = models.CharField(max_length=250, choices=CHOICES, default='unsatisfied', blank=True)
 

@@ -15,15 +15,6 @@ class RequestItemForm(forms.ModelForm):
         model = RequestItem
         exclude = ['request', 'office']
 
-# class ThingForm(forms.ModelForm):
-#     class Meta:
-#         model = Thing
-#         fields = ['name', 'type_thing', 'category', 'amount']
-
-class OfficeForm(forms.ModelForm):
-    class Meta:
-        model = Office
-        fields = ['address']
 
 class OfficeFormChoise(forms.Form):
     officeChoise = forms.ModelChoiceField(
@@ -33,15 +24,10 @@ class OfficeFormChoise(forms.Form):
     )
 
 
-class ItemFormChoise(forms.Form):
-    thing_choice = forms.ModelChoiceField(queryset=Thing.objects.all())
-    amount = forms.IntegerField()
-
-
 class ItemDescriptionForm(forms.ModelForm):
     class Meta:
         model = ItemDescription
-        fields = ['details', 'name', 'condition', 'base_item_hash', 'office', 'image']
+        exclude = '__all__'
 
 
 class RegUserForm(UserCreationForm):

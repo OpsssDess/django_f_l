@@ -1,0 +1,13 @@
+{% extends "charity/base.html"%}
+{% load crispy_forms_tags %}
+{%block title%}{%endblock%}
+{%block content%}
+<h1>Images</h1>
+<ul>
+  {% for post in object_list %}
+    <h2>{{ post.base_item_hash }}</h2>
+    <img src="{{ post.get_img_url }}" alt="{{ post.donation }}">
+  {% endfor %}
+</ul>
+
+{%endblock%}

@@ -1,15 +1,18 @@
 {% extends "charity/base.html"%}
+{% load crispy_forms_tags %}
 {%block title%}{%endblock%}
 {%block content%}
 <div class="container">
     <h2>Спасибо!!!</h2>
     <h2>Ваш номер: {{unic}}</h2>
-    {%if label %}
-        <form action="change_request_status" method="get">
-        {% csrf_token %}
-        <input type="hidden" name="hash" id="hash" value="{{unic}}">
-        <button type="submit">Забрать вещь</button>
-    </form>
-    {%endif%}
+<!--    {%if label %}-->
+<!--    <h2>Опишите, пожалуйста, то что Вы отдали</h2>-->
+<!--        <form action='add_description' method="post">-->
+<!--            {% csrf_token %}-->
+<!--            {{ form_d|crispy }}-->
+<!--            <button type="submit">Отправить!</button>-->
+<!--        </form>-->
+<!--    </form>-->
+<!--    {%endif%}-->
 </div>
 {%endblock%}

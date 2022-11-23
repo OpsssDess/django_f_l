@@ -8,8 +8,11 @@ urlpatterns = [
     path('donate2', donate2),
     path('choice_move', choice_move),
     path('help_request', help_request),
-    # path('donate', donate),
 
+
+    path('get_item', get_item),
+
+    path('HomePageView', HomePageView.as_view(), name='home_page'),
     path('login', LoginUser.as_view(), name='login'),
     path('logout', logout_user, name='logout'),
     path('register', RegisterUser.as_view(), name='register'),

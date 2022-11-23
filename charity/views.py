@@ -19,8 +19,6 @@ def index(request):
         button_disabled = office.ocupied >= office.capacity
 
     context = {
-        # 'form': ThingForm(),
-        'officeForm': OfficeForm(),
         'button_disabled': button_disabled,
         'form_d': ItemDescriptionForm(),
     }
@@ -32,7 +30,7 @@ def choice_move(request):
             donate = Donation.objects.create()
             context = {
                 'unic': donate.donation_hash,
-                'form': DonationItemForm(),
+                'form_d': ItemDescriptionForm(),
             }
             return render(request, 'charity/donate.html', context)
         else:
@@ -49,22 +47,40 @@ def donate2(request):
     actual_office = Office.objects.get(id=request.session['office_id'])
     context = {'unic': donate.donation_hash}
     if request.method == 'POST':
-        form = DonationItemForm(data=request.POST)
+        form = ItemDescriptionForm(data=request.POST)
         if form.is_valid():
             new_don_item = form.save(commit=False)
             new_don_item.donation_id = donate.pk
             new_don_item.office_id = actual_office.pk
             new_don_item.save()
             form.save_m2m()
+
     return render(request, 'charity/tnx.html', context)
 
+def get_item(request):
+    donate = Donation.objects.order_by('-creation_date')[0]
+    # actual_office = Office.objects.get(id=request.session['office_id'])
+    context = {'unic': donate.donation_hash}
+    if request.method == 'POST':
+        form = ItemDescriptionForm(request.POST, request.FILES)
+        if form.is_valid():
+            item = form.save(commit=False)
+            # item.image = request.FILES['image']
+            item.save()
+            # form.save_m2m
+
+    return render(request, 'charity/tnx.html', context)
+
+class HomePageView(ListView):
+    model = ItemDescription
+    template_name = 'charity/descriptions.html'
 
 def help_request(request):
     help_req = HelpRequest.objects.order_by('-creation_date')[0]
     actual_office = Office.objects.get(id=request.session['office_id'])
     context = {
         'unic': help_req.donation_hash,
-        'label': True,
+        'label': False,
     }
     if request.method == 'POST':
         form = RequestItemForm(data=request.POST)

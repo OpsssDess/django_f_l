@@ -47,10 +47,10 @@ class ItemDescriptionAdmin(admin.ModelAdmin):
     search_fields = ('base_item_hash', 'office')
     fieldsets = (
         (None, {
-            'fields': ('name', 'base_item_hash', 'office')
+            'fields': ('name', 'base_item_hash', 'office', 'donation', )
         }),
         ('Advanced options', {
-            'fields': ('condition', 'details',),
+            'fields': ('condition', 'details', 'state', 'amount', 'image', ),
         }),
     )
 

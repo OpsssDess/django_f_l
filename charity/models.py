@@ -1,5 +1,6 @@
 import uuid
 
+from PIL import Image
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -102,7 +103,25 @@ class ItemDescription(DonationItem):
     details = models.CharField(max_length=250)
     name = models.CharField(max_length=250)
     condition = models.CharField(max_length=250)
-    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True)
+    image = models.ImageField(upload_to='images/%Y/%m/%d/', null=True, blank=True)
+
+    @property
+    def get_img_url(self):
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        else:
+            return "/media/images/ball.jpeg"
+
+    def save(self, *args, **kwargs):
+        super(ItemDescription, self).save(*args, **kwargs)
+        if self.image:
+            img = Image.open(self.image.path)
+
+            if img.height > 300 or img.width > 300:
+                img.thumbnail((300, 300))
+                img.save(self.image.path)
+
+
 
 
 class Collection(models.Model):

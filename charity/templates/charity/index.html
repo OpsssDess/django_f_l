@@ -45,7 +45,7 @@
     <div class="container">
         <h3>Опишите вещь, которую хотите отдать</h3>
         <p>
-        <form action='add_description' method="post">
+        <form action='get_item' enctype="multipart/form-data" method="post">
             {% csrf_token %}
             {{ form_d|crispy }}
             <button type="submit">Отправить!</button>

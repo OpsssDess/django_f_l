@@ -5,7 +5,7 @@
 <div class="container">
     <form  action= 'donate2' method ='post'>
         {% csrf_token %}
-        {{ form|crispy}}
+        {{ form_d|crispy }}
         <button type = 'submit'>Отдать</button>
     </form>
 </div>

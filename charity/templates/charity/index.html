@@ -3,10 +3,9 @@
 {%block title%}{%endblock%}
 {%block content%}
 <div class="container">
-    <p class="lead">
-        Здесь можете пожерствовать любую вещь положив её в соответсвующую ячейку FIFO или LIFO.
-    </p>
-
+    <h1>
+        Вы пришли попросить или отдать?
+    </h1>
     <form action="choice_move" method="post">
         {% csrf_token %}
         <label>
@@ -21,38 +20,13 @@
         <br>
         <button type="submit">перейти</button>
     </form>
-    <div class="container">
-        <h3>Регистрация прошения</h3>
-        <form action="add_request_donate" method="post">
-            {% csrf_token %}
-            <p>Сколько хотите попросить категорий? (от 1 до 10):</p>
-            <p><input type="number" size="3" name="num" min="1" max="10" value="1"></p>
-            <button type="submit">перейти</button>
-        </form>
-    </div>
-
-    <div class="container">
-        <h3>Регистрация пожертвования</h3>
-        <p>
-        <form action='donate' method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" {% if button_disabled %} disabled {% endif %}>Пожертвовать!</button>
-        </form>
-        </p>
-    </div>
-
-    <div class="container">
-        <h3>Опишите вещь, которую хотите отдать</h3>
-        <p>
-        <form action='get_item' enctype="multipart/form-data" method="post">
-            {% csrf_token %}
-            {{ form_d|crispy }}
-            <button type="submit">Отправить!</button>
-        </form>
-
-        </p>
-    </div>
+    <h2> На этом сайте можно найти</h2>
+    <ul>
+        {% for l in list %}
+        <h2>{{ l.base_item_hash }}</h2>
+        <img src="{{ l.get_img_url }}" alt="{{ l.donation }}">
+        {% endfor %}
+    </ul>
 </div>
 
 {%endblock%}

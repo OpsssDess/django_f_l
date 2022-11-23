@@ -19,8 +19,10 @@ def index(request):
         button_disabled = office.ocupied >= office.capacity
 
     context = {
+        'list': ItemDescription.objects.all(),
         'button_disabled': button_disabled,
         'form_d': ItemDescriptionForm(),
+
     }
     return render(request, 'charity/index.html', context)
 
@@ -41,33 +43,36 @@ def choice_move(request):
             }
             return render(request, 'charity/help_request.html', context)
 
+# @transaction.atomic()
+# def donate2(request):
+#     donate = Donation.objects.order_by('-creation_date')[0]
+#     actual_office = Office.objects.get(id=request.session['office_id'])
+#     context = {'unic': donate.donation_hash}
+#     if request.method == 'POST':
+#         form = ItemDescriptionForm(data=request.POST)
+#         if form.is_valid():
+#             new_don_item = form.save(commit=False)
+#             new_don_item.donation_id = donate.pk
+#             new_don_item.office_id = actual_office.pk
+#             new_don_item.save()
+#             form.save_m2m()
+#
+#     return render(request, 'charity/tnx.html', context)
+
+
 @transaction.atomic()
-def donate2(request):
-    donate = Donation.objects.order_by('-creation_date')[0]
-    actual_office = Office.objects.get(id=request.session['office_id'])
-    context = {'unic': donate.donation_hash}
-    if request.method == 'POST':
-        form = ItemDescriptionForm(data=request.POST)
-        if form.is_valid():
-            new_don_item = form.save(commit=False)
-            new_don_item.donation_id = donate.pk
-            new_don_item.office_id = actual_office.pk
-            new_don_item.save()
-            form.save_m2m()
-
-    return render(request, 'charity/tnx.html', context)
-
 def get_item(request):
     donate = Donation.objects.order_by('-creation_date')[0]
-    # actual_office = Office.objects.get(id=request.session['office_id'])
+    actual_office = Office.objects.get(id=request.session['office_id'])
     context = {'unic': donate.donation_hash}
     if request.method == 'POST':
         form = ItemDescriptionForm(request.POST, request.FILES)
         if form.is_valid():
             item = form.save(commit=False)
-            # item.image = request.FILES['image']
+            item.donation_id = donate.pk
+            item.office_id = actual_office.pk
             item.save()
-            # form.save_m2m
+            form.save_m2m()
 
     return render(request, 'charity/tnx.html', context)
 
@@ -100,6 +105,18 @@ def set_session_office(request):
         request.session['office_id'] = form.cleaned_data['officeChoise'].id
     return redirect('main')
 
+class Search(ListView):
+    template_name = 'charity/index.html'
+    context_object_name = 'list'
+    paginate_by = 3
+
+    def get_queryset(self):
+        return ItemDescription.objects.filter(base_item_hash__name__icontains=self.request.GET.get('q'))
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q')
+        return context
 
 # @transaction.atomic()
 # def change_request_status(request):
@@ -134,24 +151,6 @@ def list_donation(request):
     context = {'page_obj': page_obj,}
     return render(request, 'charity/list_donations.html', context)
 
-'''добавить корректную ссылку на донат в итем'''
-def add_description(request):
-    donate_item = DonationItem.objects.get()
-    actual_office = Office.objects.get(id=request.session['office_id'])
-    donation = Donation.objects.create()
-    context = {
-        'unic': donation.donation_hash,
-        'label': False,
-    }
-    if request.method == 'POST':
-        form = ItemDescriptionForm(request.POST)
-        if form.is_valid():
-            item = form.save(commit=False)
-            item.donation_id = donation.pk
-            item.save()
-            form.save_m2m()
-
-    return render(request, 'charity/tnx.html', context)
 
 class RequestItemView(ListView):
     template_name = 'charity/request_list.html'

@@ -27,7 +27,7 @@ class OfficeFormChoise(forms.Form):
 class ItemDescriptionForm(forms.ModelForm):
     class Meta:
         model = ItemDescription
-        exclude = '__all__'
+        exclude = ['donation', 'office', ]
 
 
 class RegUserForm(UserCreationForm):

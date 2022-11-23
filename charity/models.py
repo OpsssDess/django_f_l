@@ -117,8 +117,8 @@ class ItemDescription(DonationItem):
         if self.image:
             img = Image.open(self.image.path)
 
-            if img.height > 300 or img.width > 300:
-                img.thumbnail((300, 300))
+            if img.height > 100 or img.width > 100:
+                img.thumbnail((100, 100))
                 img.save(self.image.path)
 
 

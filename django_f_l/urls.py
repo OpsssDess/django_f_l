@@ -22,6 +22,7 @@ from django_f_l import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('charity.urls')),
+    path('api/', include('charity_api.urls', namespace='api')),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 

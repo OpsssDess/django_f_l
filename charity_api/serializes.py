@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-class ThingSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    type_thing = serializers.CharField()
-    category = serializers.CharField()
+from charity.models import Thing
+
+
+class ThingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Thing
+        fields = "__all__"

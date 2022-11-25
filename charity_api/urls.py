@@ -4,5 +4,8 @@ from . import views
 app_name = 'charity_api'
 
 urlpatterns = [
-    path('things', views.ThingAPI.as_view())
+    path('things/', views.ThingAPIList.as_view()),
+    path('things/<int:pk>/', views.ThingAPIUpdate.as_view()),
+    path('thingsdetail/<int:pk>/', views.ThingAPIDetails.as_view()),
+
 ]

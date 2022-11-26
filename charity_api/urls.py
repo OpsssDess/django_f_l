@@ -10,5 +10,7 @@ urlpatterns = [
     path('things/', views.ThingAPIList.as_view()),
     path('things/<int:pk>/', views.ThingAPIUpdate.as_view()),
     path('thingsdelete/<int:pk>/', views.ThingAPIDestroy.as_view()),
+    path('auth/', include('djoser.urls')),
+    re_path(r'^auth/', include('djoser.urls.authtoken')),
 
 ]

@@ -1,6 +1,7 @@
 import uuid
 
 from PIL import Image
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import signals
 from django.dispatch import receiver
@@ -15,6 +16,7 @@ class Thing(models.Model):
     name = models.CharField(max_length=50, verbose_name='имя вещи')
     type_thing = models.CharField(max_length=255, verbose_name='тип вещи')
     category = models.ForeignKey('Category', on_delete=models.CASCADE, default=1)
+    user = models.ForeignKey(User, verbose_name='Пользователь', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name

@@ -1,13 +1,15 @@
-from rest_framework import generics
+from rest_framework import generics, mixins
 from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import viewsets
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.permissions import *
+from rest_framework.viewsets import GenericViewSet
+
 from charity.models import *
 from charity_api.permissions import IsAdminOrReadOnly, IsOwnderOrReadOnly
-from charity_api.serializes import ThingSerializer
+from charity_api.serializes import *
 
 class ThingAPIListPagination(PageNumberPagination):
     page_size = 5
@@ -33,5 +35,14 @@ class ThingAPIDestroy(generics.RetrieveDestroyAPIView):
     serializer_class = ThingSerializer
     permission_classes = (IsAdminOrReadOnly,)
     authentication_classes = (TokenAuthentication, )
+
+
+class ItemDescriptionAPIList(generics.ListCreateAPIView):
+    queryset = ItemDescription.objects.all()
+    serializer_class = ItemDescriptionSerializer
+
+class DonationItemViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
+    queryset = DonationItem.objects.all()
+    serializer_class = DonationItemSerializer
 
 

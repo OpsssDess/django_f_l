@@ -57,6 +57,8 @@ class BaseItem(models.Model):
     base_item_hash = models.ForeignKey('Thing', db_column='base_item_hash', on_delete=models.CASCADE)
     office = models.ForeignKey('Office', on_delete=models.CASCADE, verbose_name='склад')
 
+    def __str__(self):
+        return self.base_item_hash.name
 
 class DonationItem(BaseItem):
     state = models.CharField(max_length=250)

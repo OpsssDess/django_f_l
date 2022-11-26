@@ -14,12 +14,13 @@ from charity.forms import *
 
 def index(request):
     button_disabled = False
-    if request.session.get('office_id'):
-        office = Office.objects.get(id=request.session['office_id'])
+    actual_office = request.session.get('office_id')
+    if actual_office:
+        office = Office.objects.get(id=actual_office)
         button_disabled = office.ocupied >= office.capacity
 
     context = {
-        'list': ItemDescription.objects.all(),
+        'list': ItemDescription.objects.all().select_related(),
         'button_disabled': button_disabled,
         'form_d': ItemDescriptionForm(),
 
@@ -111,7 +112,7 @@ class Search(ListView):
     paginate_by = 3
 
     def get_queryset(self):
-        return ItemDescription.objects.filter(base_item_hash__name__icontains=self.request.GET.get('q'))
+        return ItemDescription.objects.filter(base_item_hash__name__icontains=self.request.GET.get('q')).select_related()
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -142,7 +143,7 @@ class Search(ListView):
 
 
 def list_donation(request):
-    don_list = DonationItem.objects.all()
+    don_list = DonationItem.objects.all().select_related()
     paginator = Paginator(don_list, 5)
 
     page_number = request.GET.get('page')
@@ -157,6 +158,9 @@ class RequestItemView(ListView):
     model = RequestItem
     context_object_name = 'requests'
     paginate_by = 10
+
+    def get_queryset(self):
+        return RequestItem.objects.all().select_related()
 
 
 class RegisterUser(CreateView):

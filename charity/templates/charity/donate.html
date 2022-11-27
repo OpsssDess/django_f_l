@@ -3,7 +3,7 @@
 {%block title%}{%endblock%}
 {%block content%}
 <div class="container">
-    <form  action= 'get_item' enctype="multipart/form-data" method ='post'>
+    <form  action= 'donate' enctype="multipart/form-data" method ='post'>
         {% csrf_token %}
         {{ form_d|crispy }}
         <button type = 'submit'>Отдать</button>

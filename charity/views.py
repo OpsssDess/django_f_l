@@ -33,7 +33,7 @@ def choice_move(request):
             donate = Donation.objects.create()
             context = {
                 'unic': donate.donation_hash,
-                'form_d': ItemDescriptionForm(),
+                'form_d': DonationItemForm(),
             }
             return render(request, 'charity/donate.html', context)
         else:
@@ -44,42 +44,38 @@ def choice_move(request):
             }
             return render(request, 'charity/help_request.html', context)
 
-# @transaction.atomic()
-# def donate2(request):
-#     donate = Donation.objects.order_by('-creation_date')[0]
-#     actual_office = Office.objects.get(id=request.session['office_id'])
-#     context = {'unic': donate.donation_hash}
-#     if request.method == 'POST':
-#         form = ItemDescriptionForm(data=request.POST)
-#         if form.is_valid():
-#             new_don_item = form.save(commit=False)
-#             new_don_item.donation_id = donate.pk
-#             new_don_item.office_id = actual_office.pk
-#             new_don_item.save()
-#             form.save_m2m()
-#
-#     return render(request, 'charity/tnx.html', context)
-
-
 @transaction.atomic()
-def get_item(request):
+def donate(request):
     donate = Donation.objects.order_by('-creation_date')[0]
     actual_office = Office.objects.get(id=request.session['office_id'])
     context = {'unic': donate.donation_hash}
     if request.method == 'POST':
-        form = ItemDescriptionForm(request.POST, request.FILES)
+        form = DonationItemForm(data=request.POST)
         if form.is_valid():
-            item = form.save(commit=False)
-            item.donation_id = donate.pk
-            item.office_id = actual_office.pk
-            item.save()
+            new_don_item = form.save(commit=False)
+            new_don_item.donation_id = donate.pk
+            new_don_item.office_id = actual_office.pk
+            new_don_item.save()
             form.save_m2m()
 
     return render(request, 'charity/tnx.html', context)
 
-class HomePageView(ListView):
-    model = ItemDescription
-    template_name = 'charity/descriptions.html'
+
+# @transaction.atomic()
+# def get_item(request):
+#     donate = Donation.objects.order_by('-creation_date')[0]
+#     actual_office = Office.objects.get(id=request.session['office_id'])
+#     context = {'unic': donate.donation_hash}
+#     if request.method == 'POST':
+#         form = ItemDescriptionForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             item = form.save(commit=False)
+#             item.donation_id = donate.pk
+#             item.office_id = actual_office.pk
+#             item.save()
+#             form.save_m2m()
+#
+#     return render(request, 'charity/tnx.html', context)
 
 def help_request(request):
     help_req = HelpRequest.objects.order_by('-creation_date')[0]
@@ -118,28 +114,6 @@ class Search(ListView):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get('q')
         return context
-
-# @transaction.atomic()
-# def change_request_status(request):
-#     hash = request.GET['hash']
-#
-#     help_request = HelpRequest.objects.get(donation_hash=uuid.UUID(hash))
-#     req_item = RequestItem.objects.get(request_id=help_request.pk)
-#     need_good = req_item.base_item_hash
-#     need_don_item = DonationItem.objects.get(base_item_hash__exact=need_good)
-#     if need_don_item:
-#         help_request.status_help_request = 'satisfied'
-#         help_request.save()
-#
-#         need_don_item.donation.status_donation = 'booked'
-#         need_don_item.save()
-#     else:
-#         return HttpResponse("Ваш запрос не удовлетворён, подождите!")
-#
-#     context = {
-#         'good': need_good,
-#     }
-#     return render(request, 'charity/end.html', context)
 
 
 def list_donation(request):

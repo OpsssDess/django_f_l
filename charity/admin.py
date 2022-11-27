@@ -28,7 +28,7 @@ admin.site.register(Office, OfficeAdmin)
 
 @admin.register(DonationItem)
 class DonationItemAdmin(admin.ModelAdmin):
-    list_display = ('donation', 'base_item_hash', 'office', 'amount')
+    list_display = ('id', 'donation', 'base_item_hash', 'office', 'amount')
     list_display_links = ('donation', 'base_item_hash', 'office')
     search_fields = ('base_item_hash', 'office')
 

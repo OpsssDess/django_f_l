@@ -74,7 +74,6 @@ def counting_places(sender, instance, **kwargs):
     actual_stock.save()
 
 
-
 class RequestItem(BaseItem):
     request = models.ForeignKey('HelpRequest', on_delete=models.CASCADE)
     amount_req_item = models.IntegerField(default=1)

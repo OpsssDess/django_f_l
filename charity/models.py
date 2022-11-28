@@ -85,20 +85,20 @@ def change_status(sender, instance, **kwargs):
         need_don_item = DonationItem.objects.get(base_item_hash__exact=need_good)
         if need_don_item.amount > instance.amount_req_item:
             need_don_item.amount -= instance.amount_req_item
-            need_don_item.save()
             need_don_item.donation.status_donation = 'used'
-            need_don_item.donation.save()
+
 
         elif need_don_item.amount == instance.amount_req_item:
             need_don_item.amount = 0
-            need_don_item.save()
             need_don_item.donation.status_donation = 'booked'
-            need_don_item.donation.save()
+
+        need_don_item.save()
+        need_don_item.donation.save()
         instance.request.status_help_request = 'satisfied'
         instance.request.save()
 
     except DonationItem.DoesNotExist:
-        instance.request.status_help_request = 'waiting'
+        instance.request.status_help_request = 'unsatisfied'
         instance.request.save()
 
 

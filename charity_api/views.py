@@ -49,6 +49,7 @@ class ItemDescriptionViewset(viewsets.ModelViewSet):
         don_item = DonationItem.objects.get(pk=pk)
         return Response({'donationitems': don_item.base_item_hash.name,
                          'donation_id': don_item.donation_id,
+                         'amount': don_item.amount,
                          })
 
 class DonationItemViewSet(mixins.RetrieveModelMixin, mixins.ListModelMixin, GenericViewSet):
